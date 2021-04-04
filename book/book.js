@@ -3,7 +3,7 @@ window.Book = {
         // initialisation stuff here
         this.Api.store = store;
         const wraper = $("<div class='book'></div>");
-        const characterListDom = $("<ul class='book__character-list'></ul>");
+        const characterListDom = $("<ul class='list book__character-list'></ul>");
         wraper.append(characterListDom);
         frame.append(wraper);
         this.List.init(characterListDom);
@@ -70,12 +70,12 @@ window.Book = {
             characters.sort((a, b) => a.name.localeCompare(b.name))
             characters.forEach(character => {
                 const characterListItem = $(`
-                <li class='book__character-list__item' data-selected = "false">
+                <li class='item book__character-list__item' data-selected = "false">
                     <header class='book__character-list__item--name'>
-                        <h2>${character.name}</h2>
+                        <h2 class='name'>${character.name}</h2>
                     </header>
                     <section class='book__character-list__item--species'>
-                        <span>${character.species}</span>
+                        <span class='species'>${character.species}</span>
                     </section>
                 </li>`)
 
@@ -94,6 +94,7 @@ window.Book = {
             $(".book__character-list").find(`[data-selected=true]`).data("data-selected", false).removeClass('item--selected')
             clickedItem.attr("data-selected", true);
             $("#editCharacter").attr('disabled', function(_, attr){ return !attr});
+            $("#cancelButton").attr('disabled', function(_, attr){ return !attr});
             clickedItem.addClass('item--selected')
             this.Book.Api.fetchCharacterDetails(character.id).then(
                 details => this.Book.Form.fillCharacterForm(details)
@@ -111,25 +112,25 @@ window.Book = {
         init: (wraper, characterListDom) => {
             const characterDetails = $(`
             <section class='book__character-details'>
-                <form id="form" class='book__character-details_character-form'>
+                <form id="form" class='details editor book__character-details_character-form'>
                     <label class='book__character-details_character-form--label' for="name">Name</label>
-                    <input class='book__character-details_character-form--input' type="text" id="name" disabled="true">
+                    <input name="name" class='name book__character-details_character-form--input' type="text" id="name" disabled="true">
 
                     <label class='book__character-details_character-form--label' for="female">Species</label>
-                    <input class='book__character-details_character-form--input' type="text" id="species" disabled="true">
+                    <input name="species" class='species book__character-details_character-form--input' type="text" id="species" disabled="true">
 
                     <img class="book__character-details_character-form--picture" id="picture"/>
 
-                    <label class='book__character-details_character-form--label' for="other">Description</label>
-                    <input class='book__character-details_character-form--input' type="text" id="description" disabled="true">
+                    <label class='book__character-details_character-form--label' for="description">Description</label>
+                    <input name="description" class='description book__character-details_character-form--input' type="text" id="description" disabled="true">
                 </form>
             </section>
 
             `);
-            const editCharacterButton = $('<button id="editCharacter" disabled="true" class="book__character-form__modifyPanel--btn">Edit</button>');
-            const submitFormButton = $('<input type="submit" disabled="true" class="book__character-form__modifyPanel--btn" value="Submit"/>');
+            const editCharacterButton = $('<button id="editCharacter" disabled="true" class="edit book__character-form__modifyPanel--btn">Edit</button>');
+            const submitFormButton = $('<input type="submit" disabled="true" class="save book__character-form__modifyPanel--btn" value="Submit"/>');
             const deleteButton = $('<button id="deleteCharacter" class="book__character-form__modifyPanel--btn" disabled="true">Delete</button>');
-
+            const cancelButton= $('<button id="cancelButton" class="cancel book__character-form__modifyPanel--btn to-right" disabled="true">Cancel</button>')
             const buttonPanel = $('<section id="buttonPanel" class="book__character-form__modifyPanel"></section>')
 
             const toggleFormDisability = this.Book.Form.toggleFormDisability;
@@ -148,26 +149,36 @@ window.Book = {
                 this.Book.List.init(characterListDom);
             })
 
+            const cancel = () => {
+                toggleFormDisability();
+                this.Book.Form.fillCharacterForm({
+                    name: null,
+                    picture: null,
+                    species: null,
+                    description: null
+                });
+            }
+
             deleteButton.on('click', (e) => {
                 e.preventDefault();
                 const id = this.Book.Form.selectedCharacter.id;
                 this.Book.Api.deleteCharacter(id).then(
                     () => {
                         this.Book.List.removeItemList(id);
-                        toggleFormDisability();
-                        this.Book.Form.fillCharacterForm({
-                            name: null,
-                            picture: null,
-                            species: null,
-                            description: null
-                        });
+                        cancel();
                     }
                 )
+            })
+
+            cancelButton.on('click', (e) => {
+                e.preventDefault();
+                cancel();
             })
 
             buttonPanel.append(editCharacterButton);
             buttonPanel.append(submitFormButton);
             buttonPanel.append(deleteButton);
+            buttonPanel.append(cancelButton);
 
             characterDetails.append(buttonPanel);
 
@@ -176,7 +187,7 @@ window.Book = {
 
         toggleFormDisability: function () {
             $("#form :input").attr('disabled', function(_, attr){ return !attr});
-            $("#buttonPanel :input:not(#editCharacter)").attr('disabled', function(_, attr){ return !attr});
+            $("#buttonPanel :input:not(#editCharacter):not(#cancelButton)").attr('disabled', function(_, attr){ return !attr});
         },
 
         fillCharacterForm: function (details) {

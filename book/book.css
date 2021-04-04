@@ -59,12 +59,23 @@
     height: 150px;
     border: 1px solid black;
     object-fit: contain;
+    margin-bottom: 2px;
+}
+
+.book .book__character-form__modifyPanel
+{
+    display: flex;
 }
 
 .book .book__character-form__modifyPanel--btn
 {
     padding: 5px 10px;
     margin: 0px 5px;
+}
+
+.book__character-form__modifyPanel--btn.to-right
+{
+    margin-left: auto;
 }
 
 .book .book__character-form__modifyPanel--btn.is-active
