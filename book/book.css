@@ -1,17 +1,50 @@
-.book{
+.book
+{
     height: 100%;
     display: flex;
+    font-family: sans-serif;
 }
 
-.book .book__character-list{
+.book .book__character-list
+{
     overflow-y: scroll;
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-.book .book__character-details{
+.book .book__character-list__item
+{
+    padding: 10px;
+    margin: 0;
+    border-top: 1px solid #ddd;
+    background: #f4f4f4;
+    cursor: pointer;
+    display: block;
+}
+
+.book .book__character-list__item.item--selected{
+    background: #ffffff;
+}
+
+.book__character-details_character-form--label
+{
+    margin-bottom: 2px;
+}
+
+.book__character-details_character-form--input
+{
+    margin-bottom: 6px;
+    padding: 3px;
+}
+
+.book .book__character-details
+{
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    width: 100%;
+    padding: 10px;
 }
 
 .book .book__character-details_character-form
@@ -27,3 +60,15 @@
     border: 1px solid black;
     object-fit: contain;
 }
+
+.book .book__character-form__modifyPanel--btn
+{
+    padding: 5px 10px;
+    margin: 0px 5px;
+}
+
+.book .book__character-form__modifyPanel--btn.is-active
+{
+    background-color: #36cc2f;
+}
+
