@@ -2,10 +2,12 @@ window.Book = {
     init: function (frame, store) {
         // initialisation stuff here
         this.Api.store = store;
-        const characterListDom = $("<ul class='character-list'></ul>");
-        frame.append(characterListDom);
+        const wraper = $("<div class='book'></div>");
+        const characterListDom = $("<ul class='book__character-list'></ul>");
+        wraper.append(characterListDom);
+        frame.append(wraper);
         this.List.init(characterListDom);
-        this.Form.init(frame, characterListDom);
+        this.Form.init(wraper, characterListDom);
     },
     Api: {
         store: null,
@@ -105,26 +107,29 @@ window.Book = {
     },
     Form: {
         selectedCharacter: null,
-        init: (frame, characterListDom) => {
-            const characterForm = $(`
-            <form id="form" class='character-form'>
-                <label for="name">Name</label>
-                <input type="text" id="name" disabled="true">
+        init: (wraper, characterListDom) => {
+            const characterDetails = $(`
+            <section class='book__character-details'>
+                <form id="form" class='book__character-details_character-form'>
+                    <label for="name">Name</label>
+                    <input type="text" id="name" disabled="true">
 
-                <label for="female">Species</label>
-                <input type="text" id="species" disabled="true">
+                    <label for="female">Species</label>
+                    <input type="text" id="species" disabled="true">
 
-                <img id="picture"/>
+                    <img class="book__character-details_character-form--picture" id="picture"/>
 
-                <label for="other">Description</label>
-                <input type="text" id="description" disabled="true">
+                    <label for="other">Description</label>
+                    <input type="text" id="description" disabled="true">
+                </form>
+            </section>
 
-            </form>
             `);
-
             const editCharacterButton = $('<button id="editCharacter">Edit</button>');
             const submitFormButton = $('<input type="submit" disabled="true" value="Submit"/>');
             const deleteButton = $('<button id="deleteCharacter" disabled="true">Delete</button>');
+
+            const buttonPanel = $('<section class="book__character-form__modifyPanel"></section>')
 
             const toggleInputsDisability = this.Book.Form.toggleFormInputsDisability;
 
@@ -159,11 +164,13 @@ window.Book = {
                 )
             })
 
-            characterForm.append(editCharacterButton);
-            characterForm.append(submitFormButton);
-            characterForm.append(deleteButton);
+            buttonPanel.append(editCharacterButton);
+            buttonPanel.append(submitFormButton);
+            buttonPanel.append(deleteButton);
 
-            frame.append(characterForm);
+            characterDetails.append(buttonPanel);
+
+            wraper.append(characterDetails);
         },
 
         toggleFormInputsDisability: function () {

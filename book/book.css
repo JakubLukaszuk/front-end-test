@@ -1,0 +1,29 @@
+.book{
+    height: 100%;
+    display: flex;
+}
+
+.book .book__character-list{
+    overflow-y: scroll;
+    list-style: none;
+}
+
+.book .book__character-details{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.book .book__character-details_character-form
+{
+    display: flex;
+    flex-direction: column;
+}
+
+.book .book__character-details_character-form--picture
+{
+    width: 150px;
+    height: 150px;
+    border: 1px solid black;
+    object-fit: contain;
+}
