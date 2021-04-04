@@ -2,8 +2,10 @@ window.Book = {
     init: function (frame, store) {
         // initialisation stuff here
         this.Api.store = store;
-        this.List.init(frame);
-        this.Form.init(frame);
+        const characterListDom = $("<ul class='character-list'></ul>");
+        frame.append(characterListDom);
+        this.List.init(characterListDom);
+        this.Form.init(frame, characterListDom);
     },
     Api: {
         store: null,
@@ -31,20 +33,31 @@ window.Book = {
         },
         updateCharacter: function (character) {
             return this.Book.Api.store.updateCharacter(character).then(
-                    details => {
-                        return details;
+                    characters => {
+                        return characters;
                     }
                 )
                 .catch(
                     error => {
                         return error
                     })
+        },
+
+        deleteCharacter: function (id) {
+            return this.store.deleteCharacter(id).then(
+                response => {
+                    return response;
+                }
+            )
+            .catch(
+                error => {
+                    return error
+                })
         }
     },
     List: {
-        init: (frame) => {
-            const characterListDom = $("<ul class='character-list'></ul>");
-            frame.append(characterListDom);
+        init: (characterListDom) => {
+
             $(document).ready(() => {
                 this.Book.Api.fetchCharacters().then(
                     characters => this.Book.List.fillListWithCharacters(characterListDom, characters)
@@ -65,6 +78,7 @@ window.Book = {
                 </li>`)
 
                 characterListItem.attr("data-isSelected", false)
+                characterListItem.attr("data-id", character.id)
                 const itemClick = this.onCharacterItemClick;
                 characterListItem.on("click", function () {
                     itemClick(this, character);
@@ -82,39 +96,78 @@ window.Book = {
                 details => this.Book.Form.fillCharacterForm(details)
             )
         },
-        removeList: function () {
-            $(".character-list").remove();
+        cleanUpList: function () {
+            $(".character-list").empty();
+        },
+        removeItemList: function (id) {
+            $(".character-list").find(`[data-id=${id}]`).remove();
         }
     },
     Form: {
         selectedCharacter: null,
-        init: (frame) => {
+        init: (frame, characterListDom) => {
             const characterForm = $(`
-            <form>
+            <form id="form" class='character-form'>
                 <label for="name">Name</label>
-                <input type="text" id="name">
+                <input type="text" id="name" disabled="true">
 
                 <label for="female">Species</label>
-                <input type="text" id="species">
+                <input type="text" id="species" disabled="true">
 
                 <img id="picture"/>
 
                 <label for="other">Description</label>
-                <input type="text" id="description">
+                <input type="text" id="description" disabled="true">
 
             </form>
             `);
 
-            const submitFormButton = $('<input type="submit" value="Submit"/>');
+            const editCharacterButton = $('<button id="editCharacter">Edit</button>');
+            const submitFormButton = $('<input type="submit" disabled="true" value="Submit"/>');
+            const deleteButton = $('<button id="deleteCharacter" disabled="true">Delete</button>');
+
+            const toggleInputsDisability = this.Book.Form.toggleFormInputsDisability;
+
+            editCharacterButton.on('click', (e) => {
+                e.preventDefault();
+                toggleInputsDisability();
+            })
 
             submitFormButton.on('click', (e) => {
                 e.preventDefault();
                 this.Book.Form.submitChanges(e, this.Book.Api.updateCharacter);
-                this.Book.List.removeList();
-                this.Book.List.init(frame);
+                toggleInputsDisability();
+                this.Book.List.cleanUpList();
+                this.Book.List.init(characterListDom);
+
             })
+
+            deleteButton.on('click', (e) => {
+                e.preventDefault();
+                const id = this.Book.Form.selectedCharacter.id;
+                this.Book.Api.deleteCharacter(id).then(
+                    () => {
+                        this.Book.List.removeItemList(id);
+                        toggleInputsDisability();
+                        this.Book.Form.fillCharacterForm({
+                            name: null,
+                            picture: null,
+                            species: null,
+                            description: null
+                        });
+                    }
+                )
+            })
+
+            characterForm.append(editCharacterButton);
             characterForm.append(submitFormButton);
+            characterForm.append(deleteButton);
+
             frame.append(characterForm);
+        },
+
+        toggleFormInputsDisability: function () {
+            $("#form :input:not(#editCharacter)").attr('disabled', function(_, attr){ return !attr});
         },
 
         fillCharacterForm: function (details) {
@@ -155,7 +208,6 @@ window.Book = {
         },
         submitChanges: function (event, updateCharacter) {
             event.preventDefault();
-            console.log(this);
             const modifedValue = this.getModifedValue();
             if (modifedValue) {
                 updateCharacter(modifedValue);
